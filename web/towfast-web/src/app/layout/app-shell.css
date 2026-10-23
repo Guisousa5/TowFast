@@ -1,0 +1,151 @@
+.shell {
+  min-height: 100dvh;
+  background: var(--surface-ground);
+}
+.topbar {
+  height: 72px;
+  position: fixed;
+  z-index: 50;
+  inset: 0 0 auto 0;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: var(--surface-0);
+  border-bottom: 1px solid var(--surface-border);
+}
+.brand {
+  width: 228px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+.brand span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  color: #0c2925;
+  background: #62e6aa;
+}
+.top-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.identity {
+  display: grid;
+  text-align: right;
+  font-size: 0.78rem;
+}
+.identity small {
+  color: var(--text-color-secondary);
+}
+aside {
+  position: fixed;
+  z-index: 40;
+  left: 0;
+  top: 72px;
+  bottom: 0;
+  width: 252px;
+  background: #102b2a;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+nav {
+  display: grid;
+  gap: 6px;
+}
+nav a {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 44px;
+  padding: 0 13px;
+  color: #b9cbc8;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+nav a:hover,
+nav a.active {
+  background: rgba(121, 242, 189, 0.12);
+  color: #79f2bd;
+}
+nav nz-icon {
+  width: 20px;
+  text-align: center;
+}
+.support {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: auto;
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.support nz-icon {
+  color: #79f2bd;
+}
+.support div {
+  display: grid;
+}
+.support small {
+  color: #98aeaa;
+}
+.content {
+  padding: 104px 32px 42px;
+  margin-left: 252px;
+  min-height: 100dvh;
+}
+.menu-toggle {
+  display: none;
+  background: none;
+  border: 0;
+  color: var(--text-color);
+  font-size: 1.2rem;
+}
+.scrim {
+  display: none;
+}
+@media (max-width: 760px) {
+  .topbar {
+    padding: 0 14px;
+  }
+  .menu-toggle {
+    display: block;
+    margin-right: 8px;
+  }
+  .brand {
+    width: auto;
+  }
+  .identity {
+    display: none;
+  }
+  aside {
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  aside.open {
+    transform: translateX(0);
+  }
+  .content {
+    margin-left: 0;
+    padding: 92px 16px 30px;
+  }
+  .scrim {
+    display: block;
+    position: fixed;
+    z-index: 30;
+    inset: 72px 0 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 0;
+  }
+}

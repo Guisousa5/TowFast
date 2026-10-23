@@ -1,0 +1,228 @@
+<section class="page-head">
+  <span class="kicker">ADMINISTRAÇÃO</span>
+  <h1>Gestão da plataforma</h1>
+  <p>Cadastros e disponibilidade da rede TowFast.</p>
+  <span class="health" [class.online]="apiHealth() === 'online'"
+    >API
+    {{
+      apiHealth() === 'online'
+        ? 'online'
+        : apiHealth() === 'degraded'
+          ? 'indisponível'
+          : 'verificando'
+    }}</span
+  >
+</section>
+<div class="tabs" role="tablist">
+  <button [class.active]="tab() === 'clients'" (click)="tab.set('clients')">
+    Clientes <span>{{ clients().length }}</span></button
+  ><button [class.active]="tab() === 'providers'" (click)="tab.set('providers')">
+    Prestadores <span>{{ providers().length }}</span></button
+  ><button [class.active]="tab() === 'services'" (click)="tab.set('services')">
+    Serviços <span>{{ types().length }}</span>
+  </button>
+</div>
+@if (tab() === 'clients') {
+  <section>
+    <div class="section-title">
+      <div>
+        <h2>Clientes</h2>
+        <p>Pessoas e empresas cadastradas.</p>
+      </div>
+      <button nz-button nzType="primary" (click)="clientDialog.set(true)">
+        <nz-icon nzType="plus" />Novo cliente
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Documento</th>
+            <th>Contato</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of clients(); track c.id) {
+            <tr>
+              <td>
+                <strong>{{ c.name }}</strong
+                ><small>{{ c.email }}</small>
+              </td>
+              <td>{{ c.documentType }} · {{ c.document }}</td>
+              <td>{{ c.phone }}</td>
+              <td>
+                <span class="status" [class.off]="!c.isActive">{{
+                  c.isActive ? 'Ativo' : 'Inativo'
+                }}</span>
+              </td>
+              <td>
+                <a
+                  nz-button
+                  nzType="link"
+                  routerLink="/app/minha-conta"
+                  [queryParams]="{ clientId: c.id }"
+                  >Gerenciar</a
+                ><button nz-button nzType="text" nzShape="circle" (click)="toggleClient(c)">
+                  <nz-icon [nzType]="c.isActive ? 'stop' : 'check'" />
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+@if (tab() === 'providers') {
+  <section>
+    <div class="section-title">
+      <div>
+        <h2>Prestadores</h2>
+        <p>Rede credenciada e raio de cobertura.</p>
+      </div>
+      <button nz-button nzType="primary" (click)="openProvider()">
+        <nz-icon nzType="plus" />Novo prestador
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Prestador</th>
+            <th>Documento</th>
+            <th>Cobertura</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of providers(); track p.id) {
+            <tr>
+              <td>
+                <strong>{{ p.tradeName }}</strong
+                ><small>{{ p.legalName }}</small>
+              </td>
+              <td>{{ p.document }}</td>
+              <td>{{ p.serviceRadiusKm }} km</td>
+              <td>
+                <span class="status" [class.off]="!p.isActive">{{
+                  p.isActive ? 'Ativo' : 'Inativo'
+                }}</span>
+              </td>
+              <td>
+                <button nz-button nzType="link" (click)="openProvider(p)">Editar</button
+                ><a
+                  nz-button
+                  nzType="link"
+                  routerLink="/app/equipe"
+                  [queryParams]="{ providerId: p.id }"
+                  >Equipe e frota</a
+                ><button nz-button nzType="text" nzShape="circle" (click)="toggleProvider(p)">
+                  <nz-icon [nzType]="p.isActive ? 'stop' : 'check'" />
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+@if (tab() === 'services') {
+  <section>
+    <div class="section-title">
+      <div>
+        <h2>Tipos de serviço</h2>
+        <p>Catálogo oferecido aos clientes.</p>
+      </div>
+    </div>
+    <div class="services">
+      @for (t of types(); track t.id) {
+        <article [class.off]="!t.isActive">
+          <span
+            ><nz-icon [nzType]="t.code === 'BatteryReplacement' ? 'thunderbolt' : 'tool'"
+          /></span>
+          <div>
+            <h3>{{ t.name }}</h3>
+            <p>{{ t.description }}</p>
+          </div>
+          <button
+            class="switch"
+            [class.on]="t.isActive"
+            (click)="toggleType(t)"
+            [attr.aria-label]="t.isActive ? 'Desativar' : 'Ativar'"
+          >
+            <i></i>
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+}
+
+<nz-modal
+  nzTitle="Novo cliente"
+  [nzVisible]="clientDialog()"
+  (nzOnCancel)="clientDialog.set(false)"
+  [nzFooter]="clientFooter"
+  [nzWidth]="620"
+>
+  <ng-container *nzModalContent
+    ><div class="form-grid">
+      <label class="full">Nome<input nz-input [(ngModel)]="name" /></label
+      ><label
+        >Tipo<nz-select [(ngModel)]="documentType">
+          @for (type of documentTypes; track type.value) {
+            <nz-option [nzLabel]="type.label" [nzValue]="type.value" />
+          }</nz-select></label
+      ><label>Documento<input nz-input [(ngModel)]="document" /></label
+      ><label>Telefone<input nz-input [(ngModel)]="phone" /></label
+      ><label>E-mail<input nz-input [(ngModel)]="email" type="email" /></label
+      ><label>Senha inicial<input nz-input [(ngModel)]="password" type="password" /></label></div
+  ></ng-container>
+  <ng-template #clientFooter
+    ><button nz-button (click)="clientDialog.set(false)">Cancelar</button
+    ><button nz-button nzType="primary" [nzLoading]="busy()" (click)="createClient()">
+      Criar cliente
+    </button></ng-template
+  >
+</nz-modal>
+<nz-modal
+  [nzTitle]="editingProviderId() ? 'Editar prestador' : 'Novo prestador'"
+  [nzVisible]="providerDialog()"
+  (nzOnCancel)="providerDialog.set(false)"
+  [nzFooter]="providerFooter"
+  [nzWidth]="760"
+>
+  <ng-container *nzModalContent
+    ><div class="form-grid">
+      <label>Razão social<input nz-input [(ngModel)]="legalName" /></label
+      ><label>Nome fantasia<input nz-input [(ngModel)]="tradeName" /></label>
+      @if (!editingProviderId()) {
+        <label>CNPJ<input nz-input [(ngModel)]="document" /></label
+        ><label>Senha inicial<input nz-input [(ngModel)]="password" type="password" /></label>
+      }
+      <label>Telefone<input nz-input [(ngModel)]="phone" /></label
+      ><label>E-mail<input nz-input [(ngModel)]="email" type="email" /></label
+      ><label>Raio de atendimento (km)<nz-input-number [(ngModel)]="radius" [nzMin]="1" /></label>
+      <div class="full map-field">
+        <strong>Centro de atendimento</strong
+        ><app-address-picker
+          label="Centro de atendimento"
+          placeholder="Busque o centro de atendimento"
+          [initialLatitude]="latitude"
+          [initialLongitude]="longitude"
+          (locationChange)="setProviderCenter($event)"
+        />
+      </div></div
+  ></ng-container>
+  <ng-template #providerFooter
+    ><button nz-button (click)="providerDialog.set(false)">Cancelar</button
+    ><button nz-button nzType="primary" [nzLoading]="busy()" (click)="saveProvider()">
+      {{ editingProviderId() ? 'Salvar alterações' : 'Criar prestador' }}
+    </button></ng-template
+  >
+</nz-modal>

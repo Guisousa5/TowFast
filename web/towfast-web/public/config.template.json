@@ -1,0 +1,6 @@
+{
+  "apiBaseUrl": "${API_BASE_URL}",
+  "googleMapsApiKey": "${GOOGLE_MAPS_API_KEY}",
+  "googleMapsMapId": "${GOOGLE_MAPS_MAP_ID}",
+  "trackingIntervalMs": ${TRACKING_INTERVAL_MS}
+}

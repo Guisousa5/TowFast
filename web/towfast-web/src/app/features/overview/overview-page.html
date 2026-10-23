@@ -1,0 +1,10 @@
+<section class="page-head"><div><span class="kicker">CENTRAL OPERACIONAL</span><h1>Olá, {{ session.user()?.email?.split('@')?.[0] }}</h1><p>O que precisa da sua atenção agora.</p></div>@if(session.role()==='Client'){<button nz-button nzType="primary" routerLink="/app/atendimentos"><nz-icon nzType="plus" />Novo chamado</button>}</section>
+<section class="metrics">
+  <article><span>Em andamento</span><strong>{{ active() }}</strong><nz-icon nzType="compass" /></article>
+  <article><span>Aguardando</span><strong>{{ session.role()==='Provider'||session.role()==='Driver' ? available() : pending() }}</strong><nz-icon nzType="clock-circle" /></article>
+  <article><span>Concluídos</span><strong>{{ completed() }}</strong><nz-icon nzType="check-circle" /></article>
+</section>
+<section class="recent">
+  <div class="section-title"><div><h2>Atendimentos recentes</h2><p>Atualizações mais importantes da operação.</p></div><a routerLink="/app/atendimentos">Ver todos <nz-icon nzType="arrow-right" /></a></div>
+  <div class="request-list">@for(item of requests().slice(0,5);track item.id){<a [routerLink]="['/app/atendimentos']" [queryParams]="{id:item.publicId}"><span class="service-icon"><nz-icon nzType="car" /></span><div><strong>#{{ item.publicId }}</strong><small>{{ item.openedAt | date:'dd/MM, HH:mm' }}</small></div><nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag><nz-icon nzType="right" /></a>}@empty{<div class="empty"><nz-icon nzType="inbox" /><strong>Nenhum atendimento por aqui</strong><span>Quando houver movimentação, ela aparecerá neste painel.</span></div>}</div>
+</section>

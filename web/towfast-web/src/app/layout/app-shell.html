@@ -1,0 +1,23 @@
+<div class="shell">
+  <header class="topbar">
+    <button class="menu-toggle" (click)="menuOpen.set(!menuOpen())" aria-label="Abrir menu"><nz-icon nzType="menu" /></button>
+    <a class="brand" routerLink="/app"><span><nz-icon nzType="thunderbolt" /></span><strong>TowFast</strong></a>
+    <div class="top-actions">
+      <button nz-button nzType="text" nzShape="circle" aria-label="Alternar tema" nz-tooltip nzTooltipTitle="Alternar tema" (click)="toggleTheme()"><nz-icon nzType="moon" /></button>
+      <div class="identity"><strong>{{ session.user()?.email }}</strong><small>{{ roleName() }}</small></div>
+      <button nz-button nzType="text" nzShape="circle" aria-label="Sair" nz-tooltip nzTooltipTitle="Sair" (click)="logout()"><nz-icon nzType="logout" /></button>
+    </div>
+  </header>
+  <aside [class.open]="menuOpen()">
+    <nav (click)="menuOpen.set(false)">
+      <a routerLink="/app" [routerLinkActiveOptions]="{exact:true}" routerLinkActive="active"><nz-icon nzType="home" /><span>Visão geral</span></a>
+      <a routerLink="/app/atendimentos" routerLinkActive="active"><nz-icon nzType="compass" /><span>Atendimentos</span></a>
+      @if (session.role()==='Client') { <a routerLink="/app/minha-conta" routerLinkActive="active"><nz-icon nzType="car" /><span>Veículos e locais</span></a> }
+      @if (isProvider()) { <a routerLink="/app/equipe" routerLinkActive="active"><nz-icon nzType="team" /><span>Equipe e frota</span></a> }
+      @if (isAdmin()) { <a routerLink="/app/gestao" routerLinkActive="active"><nz-icon nzType="setting" /><span>Gestão</span></a> }
+    </nav>
+    <div class="support"><nz-icon nzType="customer-service" /><div><strong>Central TowFast</strong><small>Operação 24 horas</small></div></div>
+  </aside>
+  <main class="content"><router-outlet /></main>
+  @if(menuOpen()){<button class="scrim" aria-label="Fechar menu" (click)="menuOpen.set(false)"></button>}
+</div>

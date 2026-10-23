@@ -1,0 +1,394 @@
+<section class="page-head">
+  <div>
+    <span class="kicker">ATENDIMENTOS</span>
+    <h1>{{ providerSide() ? 'Fila e operação' : 'Seus chamados' }}</h1>
+    <p>
+      {{
+        providerSide()
+          ? 'Solicitações disponíveis aparecem por ordem de abertura.'
+          : 'Abra uma solicitação e acompanhe cada etapa.'
+      }}
+    </p>
+  </div>
+  @if (canCreate()) {
+    <button nz-button nzType="primary" (click)="createVisible.set(true)">
+      <nz-icon nzType="plus" />Novo chamado
+    </button>
+  }
+</section>
+
+@if (providerSide()) {
+  <section class="queue-head">
+    <div>
+      <h2>Fila disponível</h2>
+      <span>{{ available().length }} solicitações na sua área</span>
+    </div>
+    <nz-select
+      [(ngModel)]="acceptVehicleId"
+      nzPlaceHolder="Veículo para aceitar"
+      [nzDisabled]="hasActive()"
+    >
+      @for (vehicle of providerVehicles(); track vehicle.id) {
+        <nz-option [nzLabel]="vehicle.licensePlate!" [nzValue]="vehicle.id!" />
+      }
+    </nz-select>
+  </section>
+  <div class="queue-grid">
+    @for (item of available(); track item.id) {
+      <article class="queue-card">
+        <div class="card-top">
+          <span class="service-icon"><nz-icon nzType="car" /></span
+          ><nz-tag nzColor="warning">Aguardando</nz-tag>
+        </div>
+        <h3>{{ item.serviceType }}</h3>
+        <p class="place"><nz-icon nzType="environment" />{{ item.origin }}</p>
+        <div class="meta">
+          <span><small>VEÍCULO</small>{{ item.vehicleModel }}</span
+          ><span><small>ABERTO ÀS</small>{{ item.openedAt | date: 'HH:mm' }}</span>
+        </div>
+        <div class="card-actions">
+          <button nz-button (click)="openDetail(item.publicId)">Detalhes</button
+          ><button
+            nz-button
+            nzType="primary"
+            [disabled]="hasActive() || !acceptVehicleId"
+            [nzLoading]="busy()"
+            (click)="accept(item)"
+          >
+            <nz-icon nzType="check" />Aceitar
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="empty wide">
+        <nz-icon nzType="check-circle" /><strong>Fila atendida</strong
+        ><span>Não há solicitações disponíveis na sua área agora.</span>
+      </div>
+    }
+  </div>
+}
+
+<section class="history">
+  <div class="section-title">
+    <h2>{{ providerSide() ? 'Meus atendimentos' : 'Histórico' }}</h2>
+    <button class="refresh" (click)="reload()" aria-label="Atualizar">
+      <nz-icon nzType="reload" />
+    </button>
+  </div>
+  <div class="filters">
+    <nz-select [(ngModel)]="filterStatus" nzPlaceHolder="Todos os status" nzAllowClear>
+      @for (status of statuses; track status.value) {
+        <nz-option [nzLabel]="status.label" [nzValue]="status.value" />
+      }
+    </nz-select>
+    <nz-select [(ngModel)]="filterServiceTypeId" nzPlaceHolder="Todos os serviços" nzAllowClear>
+      @for (type of types(); track type.id) {
+        <nz-option [nzLabel]="type.name!" [nzValue]="type.id!" />
+      }
+    </nz-select>
+    <input nz-input type="date" [(ngModel)]="filterFrom" aria-label="Data inicial" /><input
+      nz-input
+      type="date"
+      [(ngModel)]="filterTo"
+      aria-label="Data final"
+    />
+    @if (['Admin', 'Operator'].includes(session.role() ?? '')) {
+      <input nz-input [(ngModel)]="filterClientId" placeholder="ID do cliente" /><input
+        nz-input
+        [(ngModel)]="filterProviderId"
+        placeholder="ID do prestador"
+      />
+    }
+    <button nz-button nzType="primary" (click)="applyFilters()">
+      <nz-icon nzType="filter" />Filtrar
+    </button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Protocolo</th>
+          <th>Serviço</th>
+          <th>Abertura</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.id) {
+          <tr>
+            <td>
+              <strong>#{{ item.publicId }}</strong>
+            </td>
+            <td>{{ typeName(item.serviceTypeId) }}</td>
+            <td>{{ item.openedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
+            </td>
+            <td>
+              <button
+                nz-button
+                nzType="text"
+                nzShape="circle"
+                aria-label="Abrir atendimento"
+                (click)="openDetail(item.publicId)"
+              >
+                <nz-icon nzType="arrow-right" />
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">
+              <div class="empty">
+                <nz-icon nzType="inbox" /><strong>Nenhum chamado encontrado</strong>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="mobile-list">
+    @for (item of items(); track item.id) {
+      <button (click)="openDetail(item.publicId)">
+        <span
+          ><strong>#{{ item.publicId }}</strong
+          ><small
+            >{{ typeName(item.serviceTypeId) }} · {{ item.openedAt | date: 'dd/MM HH:mm' }}</small
+          ></span
+        ><nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag
+        ><nz-icon nzType="right" />
+      </button>
+    } @empty {
+      <div class="empty"><nz-icon nzType="inbox" /><strong>Nenhum chamado encontrado</strong></div>
+    }
+  </div>
+  <div class="pager">
+    <button
+      nz-button
+      nzType="text"
+      nzShape="circle"
+      aria-label="Página anterior"
+      [disabled]="page() <= 1"
+      (click)="applyFilters(page() - 1)"
+    >
+      <nz-icon nzType="arrow-left" /></button
+    ><span>Página {{ page() }} de {{ totalPages() }}</span
+    ><button
+      nz-button
+      nzType="text"
+      nzShape="circle"
+      aria-label="Próxima página"
+      [disabled]="page() >= totalPages()"
+      (click)="applyFilters(page() + 1)"
+    >
+      <nz-icon nzType="arrow-right" />
+    </button>
+  </div>
+</section>
+
+<nz-modal
+  nzTitle="Novo chamado"
+  [nzVisible]="createVisible()"
+  (nzOnCancel)="createVisible.set(false)"
+  [nzFooter]="createFooter"
+  [nzWidth]="620"
+>
+  <ng-container *nzModalContent
+    ><div class="form-grid">
+      <label
+        >Tipo de serviço<nz-select [(ngModel)]="serviceTypeId" nzPlaceHolder="Selecione">
+          @for (type of types(); track type.id) {
+            <nz-option [nzLabel]="type.name!" [nzValue]="type.id!" />
+          }</nz-select></label
+      ><label
+        >Veículo<nz-select [(ngModel)]="clientVehicleId" nzPlaceHolder="Selecione">
+          @for (vehicle of vehicles(); track vehicle.id) {
+            <nz-option [nzLabel]="vehicle.model!" [nzValue]="vehicle.id!" />
+          }</nz-select></label
+      ><label class="full group-label">Origem</label
+      ><label class="full"
+        >Local salvo (opcional)<nz-select
+          [(ngModel)]="originLocationId"
+          nzPlaceHolder="Buscar outro endereço no mapa"
+          nzAllowClear
+        >
+          @for (location of locations(); track location.id) {
+            <nz-option [nzLabel]="location.label!" [nzValue]="location.id!" />
+          }</nz-select
+      ></label>
+      @if (!originLocationId) {
+        <app-address-picker
+          class="full"
+          label="Origem do chamado"
+          placeholder="Busque a origem"
+          (locationChange)="originSelection = $event"
+        />
+      }
+      @if (requiresDestination()) {
+        <label class="full group-label">Destino do reboque</label
+        ><label class="full"
+          >Local salvo (opcional)<nz-select
+            [(ngModel)]="destinationLocationId"
+            nzPlaceHolder="Buscar outro destino no mapa"
+            nzAllowClear
+          >
+            @for (location of locations(); track location.id) {
+              <nz-option [nzLabel]="location.label!" [nzValue]="location.id!" />
+            }</nz-select
+        ></label>
+        @if (!destinationLocationId) {
+          <app-address-picker
+            class="full"
+            label="Destino do reboque"
+            placeholder="Busque o destino"
+            (locationChange)="destinationSelection = $event"
+          />
+        }
+      }
+      <label class="full"
+        >Observações<textarea nz-input [(ngModel)]="customerNotes" rows="3"></textarea>
+      </label></div
+  ></ng-container>
+  <ng-template #createFooter
+    ><button nz-button (click)="createVisible.set(false)">Cancelar</button
+    ><button nz-button nzType="primary" [nzLoading]="busy()" (click)="create()">
+      Solicitar assistência <nz-icon nzType="arrow-right" /></button
+  ></ng-template>
+</nz-modal>
+
+<nz-modal
+  [nzTitle]="'Atendimento #' + (detail()?.request?.publicId ?? '')"
+  [nzVisible]="detailVisible()"
+  (nzOnCancel)="closeDetail()"
+  [nzFooter]="detailFooter"
+  [nzWidth]="920"
+>
+  <ng-container *nzModalContent>
+    @if (detail(); as d) {
+      <div class="detail-grid">
+        <div class="map-area">
+          <app-tracking-map
+            [origin]="d.origin"
+            [destination]="d.destination"
+            [driver]="tracking()"
+            [driverStale]="tracking()?.isStale ?? false"
+          />
+        </div>
+        <div class="detail-info">
+          <nz-tag [nzColor]="statusColor(d.request?.status)">{{
+            statusLabel(d.request?.status)
+          }}</nz-tag>
+          <h3>{{ d.serviceType?.name }}</h3>
+          <dl>
+            <dt>Cliente</dt>
+            <dd>{{ d.client?.name }}</dd>
+            <dt>Veículo</dt>
+            <dd>
+              {{ d.vehicle?.manufacturer }} {{ d.vehicle?.model }} · {{ d.vehicle?.licensePlate }}
+            </dd>
+            <dt>Origem</dt>
+            <dd>
+              {{ d.origin?.street }}, {{ d.origin?.number }} · {{ d.origin?.city }}/{{
+                d.origin?.state
+              }}
+            </dd>
+            @if (d.destination) {
+              <dt>Destino</dt>
+              <dd>{{ d.destination?.street }}, {{ d.destination?.number }}</dd>
+            }
+            <dt>Aberto em</dt>
+            <dd>{{ d.request?.openedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            @if (tracking()) {
+              <dt>Última posição</dt>
+              <dd>
+                {{ tracking()?.capturedAt | date: 'HH:mm:ss' }} · precisão
+                {{ tracking()?.accuracyMeters ?? '—' }} m
+                {{ tracking()?.isStale ? '(desatualizada)' : '' }}
+              </dd>
+            }
+          </dl>
+        </div>
+      </div>
+    }
+  </ng-container>
+  <ng-template #detailFooter>
+    @if (
+      detail()?.request?.status === 'Pending' &&
+      (canCreate() || ['Admin', 'Operator'].includes(session.role() ?? ''))
+    ) {
+      <button nz-button nzDanger [nzLoading]="busy()" (click)="transition('cancel')">
+        Cancelar chamado
+      </button>
+    }
+    @if (
+      session.role() === 'Driver' &&
+      ['EnRoute', 'InProgress'].includes(detail()?.request?.status ?? '')
+    ) {
+      <button nz-button (click)="toggleLocation()">
+        <nz-icon [nzType]="sharingLocation() ? 'stop' : 'environment'" />{{
+          sharingLocation() ? 'Parar localização' : 'Compartilhar localização'
+        }}
+      </button>
+    }
+    @if (canOperate()) {
+      @if (detail()?.request?.status === 'Accepted') {
+        <button nz-button (click)="transition('release')">Liberar</button
+        ><button nz-button nzType="primary" (click)="transition('enroute')">
+          <nz-icon nzType="compass" />Estou a caminho
+        </button>
+      }
+      @if (['EnRoute', 'InProgress'].includes(detail()?.request?.status ?? '')) {
+        <button nz-button nzType="primary" (click)="transition('start')">
+          Iniciar atendimento
+        </button>
+      }
+      @if (detail()?.request?.status === 'InProgress') {
+        <button nz-button nzType="primary" (click)="completeVisible.set(true)">
+          <nz-icon nzType="check" />Concluir
+        </button>
+      }
+    }
+  </ng-template>
+</nz-modal>
+
+<nz-modal
+  nzTitle="Concluir atendimento"
+  [nzVisible]="completeVisible()"
+  (nzOnCancel)="completeVisible.set(false)"
+  [nzFooter]="completeFooter"
+  [nzWidth]="650"
+>
+  <ng-container *nzModalContent
+    ><div class="form-grid">
+      <label>Item<input nz-input [(ngModel)]="itemName" placeholder="Ex.: Bateria 60 Ah" /></label
+      ><label>Quantidade<input nz-input type="number" min="1" [(ngModel)]="itemQuantity" /></label
+      ><label>Unidade<input nz-input [(ngModel)]="itemUnit" /></label
+      ><label>Descrição<input nz-input [(ngModel)]="itemDescription" /></label>
+      <div class="full add-item">
+        <button nz-button (click)="addCompletionItem()">
+          <nz-icon nzType="plus" />Adicionar item
+        </button>
+      </div>
+      @for (item of completionItems(); track $index) {
+        <div class="full item-row">
+          <strong>{{ item.quantity }} {{ item.unit }} · {{ item.name }}</strong
+          ><span>{{ item.description }}</span>
+        </div>
+      }
+      <label class="full"
+        >Observações da conclusão<textarea
+          nz-input
+          [(ngModel)]="completionNotes"
+          rows="3"
+        ></textarea>
+      </label></div
+  ></ng-container>
+  <ng-template #completeFooter
+    ><button nz-button (click)="completeVisible.set(false)">Voltar</button
+    ><button nz-button nzType="primary" [nzLoading]="busy()" (click)="complete()">
+      <nz-icon nzType="check" />Confirmar conclusão
+    </button></ng-template
+  >
+</nz-modal>

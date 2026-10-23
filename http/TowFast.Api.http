@@ -1,0 +1,84 @@
+@host = http://localhost:5211
+@token = substitua-pelo-access-token
+@clientId = substitua-pelo-client-id
+@vehicleId = substitua-pelo-vehicle-id
+@serviceTypeId = 10000000-0000-0000-0000-000000000001
+@requestId = substitua-pelo-request-id
+
+### Liveness
+GET {{host}}/health/live
+
+### Swagger document
+GET {{host}}/swagger/v1/swagger.json
+
+### Register a client
+POST {{host}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "name": "Cliente TowFast",
+  "documentType": "Cpf",
+  "document": "52998224725",
+  "email": "cliente@towfast.local",
+  "phone": "11999999999",
+  "password": "UmaSenhaForte1"
+}
+
+### Add client vehicle
+POST {{host}}/api/v1/clients/{{clientId}}/vehicles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "licensePlate": "ABC1D23",
+  "manufacturer": "Fiat",
+  "model": "Argo",
+  "modelYear": 2025,
+  "color": "Branco",
+  "notes": null
+}
+
+### Create tow request with immutable location snapshots
+POST {{host}}/api/v1/service-requests
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "clientVehicleId": "{{vehicleId}}",
+  "serviceTypeId": "{{serviceTypeId}}",
+  "origin": {
+    "label": "Origem",
+    "street": "Avenida Paulista",
+    "number": "1000",
+    "complement": null,
+    "district": "Bela Vista",
+    "city": "Sao Paulo",
+    "state": "SP",
+    "postalCode": "01310100",
+    "reference": null,
+    "latitude": -23.561414,
+    "longitude": -46.655881
+  },
+  "destination": {
+    "label": "Destino",
+    "street": "Rua Vergueiro",
+    "number": "100",
+    "complement": null,
+    "district": "Liberdade",
+    "city": "Sao Paulo",
+    "state": "SP",
+    "postalCode": "01504000",
+    "reference": null,
+    "latitude": -23.555100,
+    "longitude": -46.635900
+  },
+  "customerNotes": "Veiculo em local seguro"
+}
+
+### Driver queue, oldest first
+GET {{host}}/api/v1/service-requests/available?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### Latest position only
+GET {{host}}/api/v1/service-requests/{{requestId}}/tracking/latest
+Authorization: Bearer {{token}}

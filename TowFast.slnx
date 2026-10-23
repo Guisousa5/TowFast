@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TowFast.Api/TowFast.Api.csproj" />
+    <Project Path="src/TowFast.Application/TowFast.Application.csproj" />
+    <Project Path="src/TowFast.Domain/TowFast.Domain.csproj" />
+    <Project Path="src/TowFast.Infrastructure/TowFast.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TowFast.Application.Tests/TowFast.Application.Tests.csproj" />
+    <Project Path="tests/TowFast.ArchitectureTests/TowFast.ArchitectureTests.csproj" />
+    <Project Path="tests/TowFast.Domain.Tests/TowFast.Domain.Tests.csproj" />
+    <Project Path="tests/TowFast.IntegrationTests/TowFast.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

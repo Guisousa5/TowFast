@@ -1,0 +1,35 @@
+<main class="auth-page">
+  <section class="brand-panel" aria-label="TowFast assistência 24 horas">
+    <div class="brand"><span class="mark"><nz-icon nzType="thunderbolt" /></span><strong>TowFast</strong></div>
+    <div class="road-map" aria-hidden="true"><span class="route route-a"></span><span class="route route-b"></span><span class="pulse"><nz-icon nzType="car" /></span></div>
+    <div class="brand-copy">
+      <span class="eyebrow">ASSISTÊNCIA 24 HORAS</span>
+      <h1>Ajuda certa.<br><em>Em movimento.</em></h1>
+      <p>Solicite, acompanhe e conclua atendimentos com clareza em cada etapa.</p>
+      <div class="proof"><span><nz-icon nzType="environment" /> Rastreamento ao vivo</span><span><nz-icon nzType="safety-certificate" /> Operação segura</span></div>
+    </div>
+  </section>
+
+  <section class="form-panel">
+    <div class="form-wrap">
+      <a class="mobile-brand" routerLink="/entrar"><span class="mark"><nz-icon nzType="thunderbolt" /></span><strong>TowFast</strong></a>
+      <span class="form-kicker">{{ registering() ? 'COMECE AGORA' : 'ÁREA SEGURA' }}</span>
+      <h2>{{ registering() ? 'Crie sua conta' : 'Acesse sua conta' }}</h2>
+      <p>{{ registering() ? 'Seus chamados e veículos em um só lugar.' : 'Continue de onde parou.' }}</p>
+      <form (ngSubmit)="submit()" #form="ngForm">
+        @if (registering()) {
+          <label>Nome completo<input nz-input name="name" [(ngModel)]="name" autocomplete="name" required /></label>
+          <div class="form-row">
+            <label>Documento<nz-select name="documentType" [(ngModel)]="documentType">@for(type of documentTypes;track type.value){<nz-option [nzLabel]="type.label" [nzValue]="type.value" />}</nz-select></label>
+            <label>Número<input nz-input name="document" [(ngModel)]="document" inputmode="numeric" required /></label>
+          </div>
+          <label>Telefone<input nz-input name="phone" [(ngModel)]="phone" autocomplete="tel" /></label>
+        }
+        <label>E-mail<input nz-input name="email" [(ngModel)]="email" type="email" autocomplete="email" required /></label>
+        <label>Senha<input nz-input name="password" [(ngModel)]="password" type="password" autocomplete="current-password" minlength="8" required /></label>
+        <button nz-button nzType="primary" class="full-button" type="submit" [nzLoading]="busy()" [disabled]="form.invalid">{{ registering() ? 'Criar conta' : 'Entrar' }} <nz-icon nzType="arrow-right" /></button>
+      </form>
+      <p class="switch">{{ registering() ? 'Já tem uma conta?' : 'Novo por aqui?' }} <a [routerLink]="registering() ? '/entrar' : '/cadastro'">{{ registering() ? 'Entrar' : 'Criar conta' }}</a></p>
+    </div>
+  </section>
+</main>

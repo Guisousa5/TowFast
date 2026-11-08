@@ -8,11 +8,15 @@ export class RuntimeConfigService {
 
   static async load(): Promise<void> {
     try {
-      const response = await fetch('/config.json', { cache: 'no-store' });
-      if (!response.ok) throw new Error('Runtime config unavailable');
-      const loaded = await response.json() as Partial<RuntimeConfig>;
-      RuntimeConfigService.config = { ...RuntimeConfigService.config, ...loaded };
+      const shared = await RuntimeConfigService.read('/config.json');
+      const local = await RuntimeConfigService.read('/config.local.json');
+      RuntimeConfigService.config = { ...RuntimeConfigService.config, ...shared, ...local };
     } catch { /* Defaults support the local reverse proxy. */ }
+  }
+
+  private static async read(url: string): Promise<Partial<RuntimeConfig>> {
+    const response = await fetch(url, { cache: 'no-store' });
+    return response.ok ? await response.json() as Partial<RuntimeConfig> : {};
   }
 
   get value(): RuntimeConfig { return RuntimeConfigService.config; }

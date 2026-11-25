@@ -3,10 +3,12 @@
 
 import { ServiceTypeCode } from '../models/service-type-code';
 export interface ServiceTypeResponse {
+  basePrice?: number | null;
   code?: ServiceTypeCode;
   description?: string | null;
   id?: string;
   isActive?: boolean;
   name?: string | null;
+  pricePerKm?: number | null;
   requiresDestination?: boolean;
 }

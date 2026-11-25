@@ -59,16 +59,65 @@ Endpoints de saude:
 
 ## Fluxo principal
 
-1. O cliente se cadastra em `POST /api/v1/auth/register`.
-2. Cadastra veiculo e, opcionalmente, locais reutilizaveis.
-3. Abre uma solicitacao em `POST /api/v1/service-requests`.
-4. O motorista consulta `GET /api/v1/service-requests/available`, em ordem de abertura e dentro do raio do prestador.
+1. A administracao configura os precos em `PATCH /api/v1/service-types/{id}/pricing` ou na aba **Servicos** da interface.
+2. O cliente se cadastra em `POST /api/v1/auth/register` e cadastra veiculo e locais reutilizaveis.
+3. O cliente consulta `POST /api/v1/service-requests/quote`, visualiza o preco e confirma em `POST /api/v1/service-requests` com `expectedPrice`.
+4. A API recalcula e grava o preco do chamado. O motorista consulta a fila em ordem de abertura, com o valor exibido.
 5. O motorista aceita a solicitacao. O banco impede tanto aceite duplicado quanto dois atendimentos ativos pelo mesmo prestador.
 6. O atendimento percorre `Accepted -> EnRoute -> InProgress -> Completed`, ou os fluxos permitidos de liberacao/cancelamento.
 7. Durante EnRoute ou InProgress, o motorista publica posicoes. Cliente, prestador vinculado, motorista e operacao consultam somente a ultima posicao autorizada.
 
+## Precos
+
+- Troca de bateria e troca de pneu: preco fixo configurado por servico.
+- Reboque: tarifa base mais valor por km multiplicado pela distancia aproximada em linha reta entre origem e destino. A distancia usa Haversine e e mostrada como estimativa; o calculo nao usa trajeto pelas ruas.
+- Tarifas iniciais: reboque R$ 100,00 de base mais R$ 3,00/km; troca de bateria R$ 150,00; troca de pneu R$ 80,00. O administrador pode alterar esses valores na aba **Servicos**.
+- O preco confirmado fica gravado no chamado e permanece igual quando a tarifa do catalogo muda. Chamados anteriores a esta funcionalidade exibem **Preco nao registrado**.
+
 Exemplos de requisicoes estao em [http/TowFast.Api.http](http/TowFast.Api.http).
+
+## Publicar gratuitamente
+
+A arquitetura publicada usa GitHub Pages para a SPA, Render para a API .NET e o
+PostgreSQL do Supabase ja configurado para o projeto. O frontend nao se conecta ao
+banco diretamente.
+
+### API no Render
+
+1. Importe este repositorio como um Blueprint no [Render](https://render.com/).
+   O `render.yaml` cria o servico `towfast-api` no plano Free e usa o Dockerfile
+   da raiz.
+2. Quando o Blueprint solicitar valores, informe a connection string do Supabase,
+   email do primeiro administrador e uma senha forte. O segredo JWT e gerado pelo
+   Render automaticamente.
+3. No Supabase, abra **Connect** e copie a conexao direta se a rede do servico
+   aceitar IPv6. Para IPv4, escolha **Session pooler**, porta `5432`; o usuario
+   desse modo inclui o project ref (`postgres.<project-ref>`). Mantenha SSL
+   habilitado. Nao use o pooler em modo Transaction com Entity Framework.
+4. Na primeira inicializacao, `Database__AutoMigrate=true` aplica migrations
+   pendentes e cria o administrador inicial. Confira `https://<api>/health` e, com
+   a base inicializada, altere `Database__AutoMigrate` para `false` no Render.
+5. Copie a URL HTTPS criada pelo Render para usa-la na configuracao do Pages.
+
+### Frontend no GitHub Pages
+
+1. No repositorio, abra **Settings > Pages** e escolha **GitHub Actions** como
+   fonte de publicacao. No plano GitHub Free, Pages requer repositorio publico;
+   mantenha privado apenas se a conta tiver um plano que suporte Pages privado.
+2. Em **Settings > Secrets and variables > Actions > Variables**, crie
+   `API_BASE_URL` com a URL HTTPS da API, sem barra no final. Opcionalmente, crie
+   `GOOGLE_MAPS_API_KEY` e `GOOGLE_MAPS_MAP_ID` para habilitar mapas. A chave Maps
+   e publica no navegador e deve ser limitada ao referrer
+   `https://guisousa5.github.io/TowFast/*` e somente as APIs Maps, Places e
+   Geocoding usadas pelo frontend.
+3. Execute **Actions > Deploy GitHub Pages > Run workflow**. Pushes futuros em
+   `main` que alterarem o frontend publicam automaticamente em
+   `https://guisousa5.github.io/TowFast/`.
+
+O plano gratuito do Render suspende a API depois de 15 minutos sem trafego. A
+primeira requisicao seguinte pode levar cerca de um minuto para acordar. E adequado
+para demonstracao e validacao, nao para disponibilidade continua.
 
 ## Decisoes de privacidade
 
-A fila do motorista expoe somente identificador publico, servico, modelo do veiculo e origem operacional. Senhas, tokens, CPF/CNPJ e coordenadas completas nao devem ser registrados em logs. O sistema nao mantem historico de rota e nao implementa cobranca por cancelamento.
+A fila do motorista expoe identificador publico, servico, modelo do veiculo, origem operacional e preco do atendimento. Senhas, tokens, CPF/CNPJ e coordenadas completas nao devem ser registrados em logs. O sistema nao mantem historico de rota e nao implementa cobranca por cancelamento.

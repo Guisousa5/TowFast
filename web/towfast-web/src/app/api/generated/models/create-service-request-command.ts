@@ -7,6 +7,7 @@ export interface CreateServiceRequestCommand {
   customerNotes?: string | null;
   destination?: LocationInput;
   destinationLocationId?: string | null;
+  expectedPrice?: number | null;
   origin?: LocationInput;
   originLocationId?: string | null;
   serviceTypeId?: string;

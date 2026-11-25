@@ -13,6 +13,11 @@ namespace TowFast.Api.Controllers;
 [Route("api/v1/service-requests")]
 public sealed class ServiceRequestsController(ServiceRequestService service) : ControllerBase
 {
+    [HttpPost("quote")]
+    [Authorize(Roles = "Admin,Operator,Client")]
+    public Task<PriceQuoteResponse> Quote(CreateServiceRequestCommand command, CancellationToken ct) =>
+        service.QuoteAsync(User.ToActor(), command, ct);
+
     [HttpPost]
     [Authorize(Roles = "Admin,Operator,Client")]
     [ProducesResponseType<ServiceRequestResponse>(StatusCodes.Status201Created)]

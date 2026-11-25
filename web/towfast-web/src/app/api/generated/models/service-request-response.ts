@@ -15,6 +15,7 @@ export interface ServiceRequestResponse {
   destinationLocationId?: string | null;
   driverId?: string | null;
   enRouteAt?: string | null;
+  estimatedDistanceKm?: number | null;
   history?: Array<StatusHistoryResponse> | null;
   id?: string;
   items?: Array<RequestItemResponse> | null;
@@ -23,6 +24,7 @@ export interface ServiceRequestResponse {
   providerId?: string | null;
   providerVehicleId?: string | null;
   publicId?: string | null;
+  quotedPrice?: number | null;
   serviceTypeId?: string;
   startedAt?: string | null;
   status?: ServiceRequestStatus;

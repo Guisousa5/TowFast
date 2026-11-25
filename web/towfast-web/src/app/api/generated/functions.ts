@@ -93,6 +93,10 @@ export type { ApiV1ProvidersProviderIdServiceTypesGet$Json$Params as ApiV1Provid
 export { apiV1ProvidersProviderIdServiceTypesGet$Json as apiV1ProvidersProviderIdServiceTypesGet$Json } from './fn/providers/api-v-1-providers-provider-id-service-types-get-json';
 export type { ApiV1ProvidersProviderIdServiceTypesPut$Params as ApiV1ProvidersProviderIdServiceTypesPut$Params } from './fn/providers/api-v-1-providers-provider-id-service-types-put';
 export { apiV1ProvidersProviderIdServiceTypesPut as apiV1ProvidersProviderIdServiceTypesPut } from './fn/providers/api-v-1-providers-provider-id-service-types-put';
+export type { ApiV1ServiceRequestsQuotePost$Plain$Params as ApiV1ServiceRequestsQuotePost$Plain$Params } from './fn/service-requests/api-v-1-service-requests-quote-post-plain';
+export { apiV1ServiceRequestsQuotePost$Plain as apiV1ServiceRequestsQuotePost$Plain } from './fn/service-requests/api-v-1-service-requests-quote-post-plain';
+export type { ApiV1ServiceRequestsQuotePost$Json$Params as ApiV1ServiceRequestsQuotePost$Json$Params } from './fn/service-requests/api-v-1-service-requests-quote-post-json';
+export { apiV1ServiceRequestsQuotePost$Json as apiV1ServiceRequestsQuotePost$Json } from './fn/service-requests/api-v-1-service-requests-quote-post-json';
 export type { ApiV1ServiceRequestsGet$Plain$Params as ApiV1ServiceRequestsGet$Plain$Params } from './fn/service-requests/api-v-1-service-requests-get-plain';
 export { apiV1ServiceRequestsGet$Plain as apiV1ServiceRequestsGet$Plain } from './fn/service-requests/api-v-1-service-requests-get-plain';
 export type { ApiV1ServiceRequestsGet$Json$Params as ApiV1ServiceRequestsGet$Json$Params } from './fn/service-requests/api-v-1-service-requests-get-json';
@@ -141,6 +145,10 @@ export type { ApiV1ServiceTypesIdActivePatch$Plain$Params as ApiV1ServiceTypesId
 export { apiV1ServiceTypesIdActivePatch$Plain as apiV1ServiceTypesIdActivePatch$Plain } from './fn/service-types/api-v-1-service-types-id-active-patch-plain';
 export type { ApiV1ServiceTypesIdActivePatch$Json$Params as ApiV1ServiceTypesIdActivePatch$Json$Params } from './fn/service-types/api-v-1-service-types-id-active-patch-json';
 export { apiV1ServiceTypesIdActivePatch$Json as apiV1ServiceTypesIdActivePatch$Json } from './fn/service-types/api-v-1-service-types-id-active-patch-json';
+export type { ApiV1ServiceTypesIdPricingPatch$Plain$Params as ApiV1ServiceTypesIdPricingPatch$Plain$Params } from './fn/service-types/api-v-1-service-types-id-pricing-patch-plain';
+export { apiV1ServiceTypesIdPricingPatch$Plain as apiV1ServiceTypesIdPricingPatch$Plain } from './fn/service-types/api-v-1-service-types-id-pricing-patch-plain';
+export type { ApiV1ServiceTypesIdPricingPatch$Json$Params as ApiV1ServiceTypesIdPricingPatch$Json$Params } from './fn/service-types/api-v-1-service-types-id-pricing-patch-json';
+export { apiV1ServiceTypesIdPricingPatch$Json as apiV1ServiceTypesIdPricingPatch$Json } from './fn/service-types/api-v-1-service-types-id-pricing-patch-json';
 export type { ApiV1ServiceRequestsRequestIdTrackingPositionsPost$Plain$Params as ApiV1ServiceRequestsRequestIdTrackingPositionsPost$Plain$Params } from './fn/tracking/api-v-1-service-requests-request-id-tracking-positions-post-plain';
 export { apiV1ServiceRequestsRequestIdTrackingPositionsPost$Plain as apiV1ServiceRequestsRequestIdTrackingPositionsPost$Plain } from './fn/tracking/api-v-1-service-requests-request-id-tracking-positions-post-plain';
 export type { ApiV1ServiceRequestsRequestIdTrackingPositionsPost$Json$Params as ApiV1ServiceRequestsRequestIdTrackingPositionsPost$Json$Params } from './fn/tracking/api-v-1-service-requests-request-id-tracking-positions-post-json';

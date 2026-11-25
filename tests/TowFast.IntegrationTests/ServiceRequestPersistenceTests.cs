@@ -64,5 +64,5 @@ public sealed class ServiceRequestPersistenceTests
 
     private static ServiceRequest NewRequest() => new(
         Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, false,
-        null, Guid.NewGuid(), DateTimeOffset.UtcNow);
+        null, Guid.NewGuid(), DateTimeOffset.UtcNow, 85m, null);
 }

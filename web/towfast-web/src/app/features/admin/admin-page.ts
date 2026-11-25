@@ -175,6 +175,24 @@ export class AdminPage implements OnInit {
     await firstValueFrom(this.api.setServiceTypeActive(t.id, !t.isActive));
     this.load();
   }
+  async savePrice(t: M.ServiceTypeResponse) {
+    if (!t.id || t.basePrice == null || t.basePrice <= 0 ||
+        (t.code === 'Tow' && (t.pricePerKm == null || t.pricePerKm <= 0))) {
+      this.messages.warning('Informe uma tarifa positiva para o serviço.');
+      return;
+    }
+    this.busy.set(true);
+    try {
+      const updated = await firstValueFrom(this.api.configureServicePrice(t.id, {
+        basePrice: t.basePrice,
+        pricePerKm: t.code === 'Tow' ? t.pricePerKm : null,
+      }));
+      this.types.update((items) => items.map((item) => item.id === updated.id ? updated : item));
+      this.ok('Preço do serviço atualizado');
+    } finally {
+      this.busy.set(false);
+    }
+  }
   private ok(summary: string) {
     this.messages.success(summary);
   }

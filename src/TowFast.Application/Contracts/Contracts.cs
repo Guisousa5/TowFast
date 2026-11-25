@@ -50,7 +50,9 @@ public sealed record ProviderVehicleUpdateCommand(string VehicleType, string? De
 public sealed record ProviderVehicleResponse(Guid Id, Guid ProviderId, string LicensePlate, string VehicleType,
     string? Description, decimal? CapacityKg, bool IsActive);
 
-public sealed record ServiceTypeResponse(Guid Id, ServiceTypeCode Code, string Name, string? Description, bool RequiresDestination, bool IsActive);
+public sealed record ServiceTypeResponse(Guid Id, ServiceTypeCode Code, string Name, string? Description,
+    bool RequiresDestination, bool IsActive, decimal? BasePrice, decimal? PricePerKm);
+public sealed record ConfigureServicePriceCommand(decimal BasePrice, decimal? PricePerKm);
 public sealed record SetProviderServicesCommand(IReadOnlyCollection<Guid> ServiceTypeIds);
 
 public sealed record ServiceRequestFilter(ServiceRequestStatus? Status, DateTimeOffset? From, DateTimeOffset? To,
@@ -58,7 +60,8 @@ public sealed record ServiceRequestFilter(ServiceRequestStatus? Status, DateTime
 
 public sealed record CreateServiceRequestCommand(Guid ClientVehicleId, Guid ServiceTypeId,
     LocationInput? Origin, LocationInput? Destination, string? CustomerNotes,
-    Guid? OriginLocationId = null, Guid? DestinationLocationId = null);
+    Guid? OriginLocationId = null, Guid? DestinationLocationId = null, decimal? ExpectedPrice = null);
+public sealed record PriceQuoteResponse(decimal Price, string Currency, decimal? EstimatedDistanceKm);
 public sealed record AcceptServiceRequestCommand(Guid ProviderVehicleId, long Version);
 public sealed record VersionCommand(long Version);
 public sealed record ReasonCommand(string Reason, long Version);
@@ -66,7 +69,8 @@ public sealed record CompleteItemCommand(string Name, decimal Quantity, string? 
 public sealed record CompleteServiceRequestCommand(string? CompletionNotes, IReadOnlyCollection<CompleteItemCommand> Items, long Version);
 
 public sealed record AvailableRequestResponse(string PublicId, Guid Id, string ServiceType, string VehicleModel,
-    string Origin, decimal Latitude, decimal Longitude, DateTimeOffset OpenedAt, long Version);
+    string Origin, decimal Latitude, decimal Longitude, DateTimeOffset OpenedAt, long Version,
+    decimal? QuotedPrice);
 public sealed record RequestItemResponse(string Name, decimal Quantity, string? Unit, string? Description, string? Notes);
 public sealed record StatusHistoryResponse(ServiceRequestStatus? From, ServiceRequestStatus To, Guid ChangedBy, string? Reason, DateTimeOffset At);
 public sealed record ServiceRequestResponse(Guid Id, string PublicId, Guid ClientId, Guid ClientVehicleId,
@@ -74,6 +78,7 @@ public sealed record ServiceRequestResponse(Guid Id, string PublicId, Guid Clien
     Guid? ProviderVehicleId, ServiceRequestStatus Status, string? CustomerNotes, string? CompletionNotes,
     DateTimeOffset OpenedAt, DateTimeOffset? AcceptedAt, DateTimeOffset? EnRouteAt, DateTimeOffset? StartedAt,
     DateTimeOffset? CompletedAt, DateTimeOffset? CancelledAt, long Version,
+    decimal? QuotedPrice, decimal? EstimatedDistanceKm,
     IReadOnlyCollection<RequestItemResponse> Items, IReadOnlyCollection<StatusHistoryResponse> History);
 public sealed record RequestClientResponse(Guid Id, string Name, string? Email, string? Phone);
 public sealed record ServiceRequestDetailResponse(ServiceRequestResponse Request, RequestClientResponse Client,

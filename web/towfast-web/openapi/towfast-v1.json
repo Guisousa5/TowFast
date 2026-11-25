@@ -1242,6 +1242,54 @@
         }
       }
     },
+    "/api/v1/service-requests/quote": {
+      "post": {
+        "tags": [
+          "ServiceRequests"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceRequestCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceRequestCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateServiceRequestCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceQuoteResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceQuoteResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceQuoteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/service-requests": {
       "post": {
         "tags": [
@@ -1931,6 +1979,65 @@
         }
       }
     },
+    "/api/v1/service-types/{id}/pricing": {
+      "patch": {
+        "tags": [
+          "ServiceTypes"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureServicePriceCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureServicePriceCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureServicePriceCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceTypeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/service-requests/{requestId}/tracking/positions": {
       "post": {
         "tags": [
@@ -2119,6 +2226,11 @@
           "version": {
             "type": "integer",
             "format": "int64"
+          },
+          "quotedPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2287,6 +2399,21 @@
         },
         "additionalProperties": false
       },
+      "ConfigureServicePriceCommand": {
+        "type": "object",
+        "properties": {
+          "basePrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "pricePerKm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateServiceRequestCommand": {
         "type": "object",
         "properties": {
@@ -2316,6 +2443,11 @@
           "destinationLocationId": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          },
+          "expectedPrice": {
+            "type": "number",
+            "format": "double",
             "nullable": true
           }
         },
@@ -2561,6 +2693,25 @@
           },
           "password": {
             "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PriceQuoteResponse": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true
+          },
+          "estimatedDistanceKm": {
+            "type": "number",
+            "format": "double",
             "nullable": true
           }
         },
@@ -3027,6 +3178,16 @@
             "type": "integer",
             "format": "int64"
           },
+          "quotedPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "estimatedDistanceKm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
           "items": {
             "type": "array",
             "items": {
@@ -3116,6 +3277,16 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "basePrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "pricePerKm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
           }
         },
         "additionalProperties": false

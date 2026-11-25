@@ -46,6 +46,7 @@
           <span><small>VEÍCULO</small>{{ item.vehicleModel }}</span
           ><span><small>ABERTO ÀS</small>{{ item.openedAt | date: 'HH:mm' }}</span>
         </div>
+        <p class="quoted-price"><small>PREÇO DO ATENDIMENTO</small><strong>{{ formatPrice(item.quotedPrice) }}</strong></p>
         <div class="card-actions">
           <button nz-button (click)="openDetail(item.publicId)">Detalhes</button
           ><button
@@ -109,6 +110,7 @@
         <tr>
           <th>Protocolo</th>
           <th>Serviço</th>
+          <th>Preço</th>
           <th>Abertura</th>
           <th>Status</th>
           <th></th>
@@ -121,6 +123,7 @@
               <strong>#{{ item.publicId }}</strong>
             </td>
             <td>{{ typeName(item.serviceTypeId) }}</td>
+            <td class="money-cell">{{ formatPrice(item.quotedPrice) }}</td>
             <td>{{ item.openedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag>
@@ -139,7 +142,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">
+            <td colspan="6">
               <div class="empty">
                 <nz-icon nzType="inbox" /><strong>Nenhum chamado encontrado</strong>
               </div>
@@ -156,7 +159,7 @@
           ><strong>#{{ item.publicId }}</strong
           ><small
             >{{ typeName(item.serviceTypeId) }} · {{ item.openedAt | date: 'dd/MM HH:mm' }}</small
-          ></span
+          ><b class="mobile-price">{{ formatPrice(item.quotedPrice) }}</b></span
         ><nz-tag [nzColor]="statusColor(item.status)">{{ statusLabel(item.status) }}</nz-tag
         ><nz-icon nzType="right" />
       </button>
@@ -191,19 +194,19 @@
 <nz-modal
   nzTitle="Novo chamado"
   [nzVisible]="createVisible()"
-  (nzOnCancel)="createVisible.set(false)"
+  (nzOnCancel)="closeCreate()"
   [nzFooter]="createFooter"
   [nzWidth]="620"
 >
   <ng-container *nzModalContent
     ><div class="form-grid">
       <label
-        >Tipo de serviço<nz-select [(ngModel)]="serviceTypeId" nzPlaceHolder="Selecione">
+        >Tipo de serviço<nz-select [(ngModel)]="serviceTypeId" (ngModelChange)="invalidateQuote()" nzPlaceHolder="Selecione">
           @for (type of types(); track type.id) {
             <nz-option [nzLabel]="type.name!" [nzValue]="type.id!" />
           }</nz-select></label
       ><label
-        >Veículo<nz-select [(ngModel)]="clientVehicleId" nzPlaceHolder="Selecione">
+        >Veículo<nz-select [(ngModel)]="clientVehicleId" (ngModelChange)="invalidateQuote()" nzPlaceHolder="Selecione">
           @for (vehicle of vehicles(); track vehicle.id) {
             <nz-option [nzLabel]="vehicle.model!" [nzValue]="vehicle.id!" />
           }</nz-select></label
@@ -211,6 +214,7 @@
       ><label class="full"
         >Local salvo (opcional)<nz-select
           [(ngModel)]="originLocationId"
+          (ngModelChange)="invalidateQuote()"
           nzPlaceHolder="Buscar outro endereço no mapa"
           nzAllowClear
         >
@@ -223,7 +227,7 @@
           class="full"
           label="Origem do chamado"
           placeholder="Busque a origem"
-          (locationChange)="originSelection = $event"
+          (locationChange)="originSelection = $event; invalidateQuote()"
         />
       }
       @if (requiresDestination()) {
@@ -231,6 +235,7 @@
         ><label class="full"
           >Local salvo (opcional)<nz-select
             [(ngModel)]="destinationLocationId"
+            (ngModelChange)="invalidateQuote()"
             nzPlaceHolder="Buscar outro destino no mapa"
             nzAllowClear
           >
@@ -243,18 +248,29 @@
             class="full"
             label="Destino do reboque"
             placeholder="Busque o destino"
-            (locationChange)="destinationSelection = $event"
+            (locationChange)="destinationSelection = $event; invalidateQuote()"
           />
         }
       }
       <label class="full"
-        >Observações<textarea nz-input [(ngModel)]="customerNotes" rows="3"></textarea>
-      </label></div
+        >Observações<textarea nz-input [(ngModel)]="customerNotes" (ngModelChange)="invalidateQuote()" rows="3"></textarea>
+      </label>
+      @if (priceQuote(); as quote) {
+        <div class="full price-summary" aria-live="polite">
+          <span>Preço do atendimento</span>
+          <strong>{{ formatPrice(quote.price) }}</strong>
+          @if (quote.estimatedDistanceKm != null) {
+            <small>Reboque: {{ quote.estimatedDistanceKm }} km aproximados entre origem e destino.</small>
+          }
+          <small>Confirme para abrir o chamado com este valor.</small>
+        </div>
+      }
+      </div
   ></ng-container>
   <ng-template #createFooter
-    ><button nz-button (click)="createVisible.set(false)">Cancelar</button
+    ><button nz-button (click)="closeCreate()">Cancelar</button
     ><button nz-button nzType="primary" [nzLoading]="busy()" (click)="create()">
-      Solicitar assistência <nz-icon nzType="arrow-right" /></button
+      {{ priceQuote() ? 'Confirmar chamado' : 'Ver preço' }} <nz-icon nzType="arrow-right" /></button
   ></ng-template>
 </nz-modal>
 
@@ -300,6 +316,12 @@
             }
             <dt>Aberto em</dt>
             <dd>{{ d.request?.openedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            <dt>Preço do atendimento</dt>
+            <dd class="detail-price">{{ formatPrice(d.request?.quotedPrice) }}</dd>
+            @if (d.request?.estimatedDistanceKm != null) {
+              <dt>Distância estimada</dt>
+              <dd>{{ d.request?.estimatedDistanceKm }} km aproximados</dd>
+            }
             @if (tracking()) {
               <dt>Última posição</dt>
               <dd>

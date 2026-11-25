@@ -17,4 +17,9 @@ public sealed class ServiceTypesController(CatalogService service) : ControllerB
     [Authorize(Roles = "Admin,Operator")]
     public Task<ServiceTypeResponse> SetActive(Guid id, ActiveCommand command, CancellationToken ct) =>
         service.SetServiceTypeActiveAsync(id, command.IsActive, ct);
+
+    [HttpPatch("{id:guid}/pricing")]
+    [Authorize(Roles = "Admin,Operator")]
+    public Task<ServiceTypeResponse> ConfigurePricing(Guid id, ConfigureServicePriceCommand command,
+        CancellationToken ct) => service.ConfigureServicePriceAsync(id, command, ct);
 }

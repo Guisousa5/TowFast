@@ -1,0 +1,12 @@
+.git
+.vs
+**/bin
+**/obj
+**/node_modules
+**/.angular
+web
+tests
+specs
+artifacts
+tools
+*.docx

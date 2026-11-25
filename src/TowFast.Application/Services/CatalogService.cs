@@ -208,12 +208,21 @@ public sealed class CatalogService(
     }
 
     public async Task<IReadOnlyList<ServiceTypeResponse>> ListServiceTypesAsync(CancellationToken ct) =>
-        (await store.ListAsync<ServiceType>(x => x.IsActive, ct)).OrderBy(x => x.Code).Select(Map).ToList();
+        (await store.ListAsync<ServiceType>(null, ct)).OrderBy(x => x.Code).Select(Map).ToList();
 
     public async Task<ServiceTypeResponse> SetServiceTypeActiveAsync(Guid id, bool isActive, CancellationToken ct)
     {
         var serviceType = await RequiredAsync<ServiceType>(id, ct);
         serviceType.SetActive(isActive, clock.UtcNow);
+        await store.SaveChangesAsync(ct);
+        return Map(serviceType);
+    }
+
+    public async Task<ServiceTypeResponse> ConfigureServicePriceAsync(Guid id,
+        ConfigureServicePriceCommand command, CancellationToken ct)
+    {
+        var serviceType = await RequiredAsync<ServiceType>(id, ct);
+        serviceType.ConfigurePricing(command.BasePrice, command.PricePerKm, clock.UtcNow);
         await store.SaveChangesAsync(ct);
         return Map(serviceType);
     }
@@ -254,5 +263,6 @@ public sealed class CatalogService(
     private static ProviderResponse Map(Provider x) => new(x.Id, x.LegalName, x.TradeName, x.Document, x.Email, x.Phone, x.ServiceCenterLatitude, x.ServiceCenterLongitude, x.ServiceRadiusKm, x.IsActive);
     private static DriverResponse Map(Driver x) => new(x.Id, x.ProviderId, x.FullName, x.Document, x.Phone, x.LicenseNumber, x.LicenseCategory, x.LicenseExpiresOn, x.IsActive);
     private static ProviderVehicleResponse Map(ProviderVehicle x) => new(x.Id, x.ProviderId, x.LicensePlate, x.VehicleType, x.Description, x.CapacityKg, x.IsActive);
-    private static ServiceTypeResponse Map(ServiceType x) => new(x.Id, x.Code, x.Name, x.Description, x.RequiresDestination, x.IsActive);
+    private static ServiceTypeResponse Map(ServiceType x) => new(x.Id, x.Code, x.Name, x.Description,
+        x.RequiresDestination, x.IsActive, x.BasePrice, x.PricePerKm);
 }

@@ -66,6 +66,8 @@ export class RequestsPage implements OnInit {
   readonly createVisible = signal(false);
   readonly completeVisible = signal(false);
   readonly busy = signal(false);
+  readonly priceQuote = signal<M.PriceQuoteResponse | null>(null);
+  private quotedCommand: string | null = null;
   readonly sharingLocation = signal(false);
   readonly providerSide = computed(() => this.session.role() === 'Driver');
   readonly canOperate = computed(() =>
@@ -126,12 +128,16 @@ export class RequestsPage implements OnInit {
     this.filterProviderId = q.get('providerId') ?? '';
     this.filterDriverId = q.get('driverId') ?? '';
     this.reload();
+    const listPoll = timer(15000, 15000).subscribe(() => {
+      if (!document.hidden && !this.createVisible() && !this.detailVisible() && !this.busy()) this.reload();
+    });
     const id = q.get('id');
     if (id) void this.openDetail(id);
     const sub = timer(0, trackingIntervalMs(this.config.value.trackingIntervalMs)).subscribe(() =>
       this.refreshTracking(),
     );
     this.destroy.onDestroy(() => {
+      listPoll.unsubscribe();
       sub.unsubscribe();
       this.closeDetail();
     });
@@ -243,11 +249,21 @@ export class RequestsPage implements OnInit {
     }
     this.busy.set(true);
     try {
-      await firstValueFrom(this.api.createRequest(body));
+      const command = JSON.stringify(body);
+      if (!this.priceQuote() || this.quotedCommand !== command) {
+        const quote = await firstValueFrom(this.api.quoteRequest(body));
+        this.priceQuote.set(quote);
+        this.quotedCommand = command;
+        return;
+      }
+      await firstValueFrom(this.api.createRequest({ ...body, expectedPrice: this.priceQuote()!.price }));
       this.messages.success('Chamado aberto: a solicitação já está visível para os prestadores.');
       this.createVisible.set(false);
       this.resetCreate();
       this.reload();
+    } catch {
+      this.priceQuote.set(null);
+      this.quotedCommand = null;
     } finally {
       this.busy.set(false);
     }
@@ -505,7 +521,22 @@ export class RequestsPage implements OnInit {
   typeName(id?: string) {
     return this.types().find((x) => x.id === id)?.name ?? 'Assistência';
   }
+  formatPrice(value?: number | null): string {
+    return value == null
+      ? 'Preço não registrado'
+      : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  }
+  closeCreate(): void {
+    this.createVisible.set(false);
+    this.resetCreate();
+  }
+  invalidateQuote(): void {
+    this.priceQuote.set(null);
+    this.quotedCommand = null;
+  }
   private resetCreate() {
+    this.priceQuote.set(null);
+    this.quotedCommand = null;
     this.serviceTypeId = '';
     this.clientVehicleId = '';
     this.originLocationId = '';

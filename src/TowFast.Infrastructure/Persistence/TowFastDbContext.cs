@@ -128,12 +128,19 @@ public sealed class TowFastDbContext(DbContextOptions<TowFastDbContext> options)
             e.ToTable("service_types");
             e.HasKey(x => x.Id);
             e.Property(x => x.Code).HasConversion<string>().HasMaxLength(40);
+            e.Property(x => x.BasePrice).HasPrecision(12, 2);
+            e.Property(x => x.PricePerKm).HasPrecision(12, 2);
             e.HasIndex(x => x.Code).IsUnique();
+            e.ToTable(t =>
+            {
+                t.HasCheckConstraint("ck_service_types_base_price", "base_price IS NULL OR base_price > 0");
+                t.HasCheckConstraint("ck_service_types_price_per_km", "price_per_km IS NULL OR price_per_km > 0");
+            });
             var seededAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
             e.HasData(
-                new { Id = Guid.Parse("10000000-0000-0000-0000-000000000001"), Code = ServiceTypeCode.Tow, Name = "Reboque", Description = "Remocao do veiculo", RequiresDestination = true, IsActive = true, CreatedAt = seededAt, UpdatedAt = seededAt },
-                new { Id = Guid.Parse("10000000-0000-0000-0000-000000000002"), Code = ServiceTypeCode.BatteryReplacement, Name = "Troca de bateria", Description = (string?)null, RequiresDestination = false, IsActive = true, CreatedAt = seededAt, UpdatedAt = seededAt },
-                new { Id = Guid.Parse("10000000-0000-0000-0000-000000000003"), Code = ServiceTypeCode.TireChange, Name = "Troca de pneu", Description = (string?)null, RequiresDestination = false, IsActive = true, CreatedAt = seededAt, UpdatedAt = seededAt });
+                new { Id = Guid.Parse("10000000-0000-0000-0000-000000000001"), Code = ServiceTypeCode.Tow, Name = "Reboque", Description = "Remocao do veiculo", RequiresDestination = true, BasePrice = (decimal?)100m, PricePerKm = (decimal?)3m, IsActive = true, CreatedAt = seededAt, UpdatedAt = seededAt },
+                new { Id = Guid.Parse("10000000-0000-0000-0000-000000000002"), Code = ServiceTypeCode.BatteryReplacement, Name = "Troca de bateria", Description = (string?)null, RequiresDestination = false, BasePrice = (decimal?)150m, PricePerKm = (decimal?)null, IsActive = true, CreatedAt = seededAt, UpdatedAt = seededAt },
+                new { Id = Guid.Parse("10000000-0000-0000-0000-000000000003"), Code = ServiceTypeCode.TireChange, Name = "Troca de pneu", Description = (string?)null, RequiresDestination = false, BasePrice = (decimal?)80m, PricePerKm = (decimal?)null, IsActive = true, CreatedAt = seededAt, UpdatedAt = seededAt });
         });
         b.Entity<ProviderServiceType>(e =>
         {
@@ -154,6 +161,13 @@ public sealed class TowFastDbContext(DbContextOptions<TowFastDbContext> options)
             e.HasIndex(x => x.PublicId).IsUnique();
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
             e.Property(x => x.Version).IsConcurrencyToken();
+            e.Property(x => x.QuotedPrice).HasPrecision(12, 2);
+            e.Property(x => x.EstimatedDistanceKm).HasPrecision(10, 2);
+            e.ToTable(t =>
+            {
+                t.HasCheckConstraint("ck_requests_quoted_price", "quoted_price IS NULL OR quoted_price > 0");
+                t.HasCheckConstraint("ck_requests_distance", "estimated_distance_km IS NULL OR estimated_distance_km >= 0");
+            });
             e.HasIndex(x => new { x.Status, x.CreatedAt, x.PublicId });
             e.HasIndex(x => x.ProviderId).IsUnique()
                 .HasFilter("provider_id IS NOT NULL AND status IN ('Accepted', 'EnRoute', 'InProgress')");

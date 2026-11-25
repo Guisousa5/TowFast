@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: towfast-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health/live
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__TowFast
+        sync: false
+      - key: Jwt__SigningKey
+        generateValue: true
+      - key: Database__AutoMigrate
+        value: "true"
+      - key: BootstrapAdmin__Email
+        sync: false
+      - key: BootstrapAdmin__Password
+        sync: false

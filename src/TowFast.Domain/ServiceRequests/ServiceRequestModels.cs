@@ -28,12 +28,19 @@ public sealed class ServiceRequest : Entity
 
     public ServiceRequest(Guid clientId, Guid clientVehicleId, Guid serviceTypeId,
         Guid originLocationId, Guid? destinationLocationId, bool requiresDestination,
-        string? customerNotes, Guid createdByUserId, DateTimeOffset now)
+        string? customerNotes, Guid createdByUserId, DateTimeOffset now,
+        decimal quotedPrice, decimal? estimatedDistanceKm)
     {
         if (requiresDestination && destinationLocationId is null)
         {
             throw new DomainException("Destination is required for towing.");
         }
+        if (quotedPrice <= 0 || decimal.Round(quotedPrice, 2) != quotedPrice)
+            throw new DomainException("Quoted price must be positive with at most two decimal places.");
+        if (requiresDestination && (estimatedDistanceKm is null or < 0))
+            throw new DomainException("Towing distance is required.");
+        if (!requiresDestination && estimatedDistanceKm is not null)
+            throw new DomainException("Distance is only applicable to towing.");
 
         ClientId = clientId;
         ClientVehicleId = clientVehicleId;
@@ -41,6 +48,8 @@ public sealed class ServiceRequest : Entity
         OriginLocationId = originLocationId;
         DestinationLocationId = requiresDestination ? destinationLocationId : null;
         CustomerNotes = customerNotes?.Trim();
+        QuotedPrice = quotedPrice;
+        EstimatedDistanceKm = estimatedDistanceKm;
         PublicId = $"TF-{now:yyyyMMdd}-{Guid.NewGuid():N}"[..24].ToUpperInvariant();
         Status = ServiceRequestStatus.Pending;
         CreatedAt = now;
@@ -59,6 +68,8 @@ public sealed class ServiceRequest : Entity
     public Guid? ProviderVehicleId { get; private set; }
     public ServiceRequestStatus Status { get; private set; }
     public string? CustomerNotes { get; private set; }
+    public decimal? QuotedPrice { get; private set; }
+    public decimal? EstimatedDistanceKm { get; private set; }
     public string? OperatorNotes { get; private set; }
     public string? CompletionNotes { get; private set; }
     public DateTimeOffset? AcceptedAt { get; private set; }

@@ -8,6 +8,7 @@ export interface AvailableRequestResponse {
   openedAt?: string;
   origin?: string | null;
   publicId?: string | null;
+  quotedPrice?: number | null;
   serviceType?: string | null;
   vehicleModel?: string | null;
   version?: number;

@@ -69,10 +69,11 @@ builder.Services.AddRateLimiter(options =>
 });
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
     options.AddPolicy("AllowAngularApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // origem do Angular
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -99,6 +100,7 @@ var app = builder.Build();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ApiExceptionMiddleware>();
 app.UseHttpsRedirection();
+app.UseCors("AllowAngularApp");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -114,7 +116,6 @@ if (enableSwagger)
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "TowFast API v1");
     });
 }
-app.UseCors("AllowAngularApp");
 app.MapControllers();
 app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });

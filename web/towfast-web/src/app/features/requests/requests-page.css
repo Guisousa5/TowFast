@@ -92,6 +92,34 @@
   color: var(--text-color-secondary);
   font-weight: 800;
 }
+.quoted-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 15px;
+}
+.quoted-price small {
+  color: var(--text-color-secondary);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+.quoted-price strong,
+.money-cell,
+.detail-price {
+  color: #117a54;
+  font-weight: 800;
+}
+.price-summary {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #8bc9ac;
+  border-radius: 7px;
+  background: #eef9f2;
+  padding: 16px;
+}
+.price-summary strong { font-size: 1.5rem; color: #106f4d; }
+.price-summary small { color: #45635c; }
 .card-actions {
   display: flex;
   justify-content: flex-end;
@@ -304,6 +332,7 @@ td {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  .mobile-price { color: #117a54; font-size: 0.88rem; }
   .mobile-list > button > i {
     font-size: 0.7rem;
     color: var(--text-color-secondary);

@@ -161,7 +161,26 @@ public sealed class ServiceType : Entity
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public bool RequiresDestination { get; private set; }
+    public decimal? BasePrice { get; private set; }
+    public decimal? PricePerKm { get; private set; }
     public bool IsActive { get; private set; } = true;
+
+    public void ConfigurePricing(decimal basePrice, decimal? pricePerKm, DateTimeOffset now)
+    {
+        if (basePrice <= 0 || decimal.Round(basePrice, 2) != basePrice)
+            throw new DomainException("Base price must be positive with at most two decimal places.");
+        if (Code == ServiceTypeCode.Tow)
+        {
+            if (pricePerKm is null or <= 0 || decimal.Round(pricePerKm.Value, 2) != pricePerKm)
+                throw new DomainException("Towing price per kilometer must be positive with at most two decimal places.");
+        }
+        else if (pricePerKm is not null)
+            throw new DomainException("Only towing can have a price per kilometer.");
+
+        BasePrice = basePrice;
+        PricePerKm = pricePerKm;
+        Touch(now);
+    }
 
     public void SetActive(bool active, DateTimeOffset now)
     {

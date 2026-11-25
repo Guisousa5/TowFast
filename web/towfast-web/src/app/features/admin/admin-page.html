@@ -136,7 +136,7 @@
     <div class="section-title">
       <div>
         <h2>Tipos de serviço</h2>
-        <p>Catálogo oferecido aos clientes.</p>
+        <p>Configure o preço fixo de bateria e pneu. Para reboque, informe a tarifa base e o valor por km aproximado.</p>
       </div>
     </div>
     <div class="services">
@@ -148,6 +148,22 @@
           <div>
             <h3>{{ t.name }}</h3>
             <p>{{ t.description }}</p>
+            @if (t.basePrice == null || (t.code === 'Tow' && t.pricePerKm == null)) {
+              <p class="pricing-pending">Preço pendente de configuração</p>
+            }
+            <div class="pricing-fields">
+              <label>{{ t.code === 'Tow' ? 'Tarifa base (R$)' : 'Preço fixo (R$)' }}
+                <nz-input-number [(ngModel)]="t.basePrice" [nzMin]="0.01" [nzStep]="1" />
+              </label>
+              @if (t.code === 'Tow') {
+                <label>Valor por km (R$)
+                  <nz-input-number [(ngModel)]="t.pricePerKm" [nzMin]="0.01" [nzStep]="1" />
+                </label>
+              }
+              <button nz-button nzType="default" [nzLoading]="busy()" (click)="savePrice(t)">
+                Salvar preço
+              </button>
+            </div>
           </div>
           <button
             class="switch"

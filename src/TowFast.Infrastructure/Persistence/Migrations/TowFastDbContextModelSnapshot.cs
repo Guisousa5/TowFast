@@ -565,6 +565,11 @@ namespace TowFast.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<decimal?>("BasePrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("base_price");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -588,6 +593,11 @@ namespace TowFast.Infrastructure.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<decimal?>("PricePerKm")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("price_per_km");
+
                     b.Property<bool>("RequiresDestination")
                         .HasColumnType("boolean")
                         .HasColumnName("requires_destination");
@@ -601,23 +611,31 @@ namespace TowFast.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("service_types", (string)null);
+                    b.ToTable("service_types", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_types_base_price", "base_price IS NULL OR base_price > 0");
+
+                            t.HasCheckConstraint("ck_service_types_price_per_km", "price_per_km IS NULL OR price_per_km > 0");
+                        });
 
                     b.HasData(
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000001"),
+                            BasePrice = 100m,
                             Code = "Tow",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Description = "Remocao do veiculo",
                             IsActive = true,
                             Name = "Reboque",
+                            PricePerKm = 3m,
                             RequiresDestination = true,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
                         },
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000002"),
+                            BasePrice = 150m,
                             Code = "BatteryReplacement",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
@@ -628,6 +646,7 @@ namespace TowFast.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("10000000-0000-0000-0000-000000000003"),
+                            BasePrice = 80m,
                             Code = "TireChange",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsActive = true,
@@ -688,6 +707,11 @@ namespace TowFast.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("en_route_at");
 
+                    b.Property<decimal?>("EstimatedDistanceKm")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("estimated_distance_km");
+
                     b.Property<string>("OperatorNotes")
                         .HasColumnType("text")
                         .HasColumnName("operator_notes");
@@ -709,6 +733,11 @@ namespace TowFast.Infrastructure.Persistence.Migrations
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)")
                         .HasColumnName("public_id");
+
+                    b.Property<decimal?>("QuotedPrice")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("quoted_price");
 
                     b.Property<Guid>("ServiceTypeId")
                         .HasColumnType("uuid")
@@ -754,7 +783,12 @@ namespace TowFast.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status", "CreatedAt", "PublicId");
 
-                    b.ToTable("service_requests", (string)null);
+                    b.ToTable("service_requests", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_requests_distance", "estimated_distance_km IS NULL OR estimated_distance_km >= 0");
+
+                            t.HasCheckConstraint("ck_requests_quoted_price", "quoted_price IS NULL OR quoted_price > 0");
+                        });
                 });
 
             modelBuilder.Entity("TowFast.Domain.ServiceRequests.ServiceRequestAssignment", b =>

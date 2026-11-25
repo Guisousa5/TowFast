@@ -11,7 +11,7 @@ public sealed class ServiceRequestTests
     public void Tow_requires_destination()
     {
         Assert.Throws<DomainException>(() => new ServiceRequest(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
-            Guid.NewGuid(), null, true, null, Guid.NewGuid(), Now));
+            Guid.NewGuid(), null, true, null, Guid.NewGuid(), Now, 120m, 5m));
     }
 
     [Fact]
@@ -50,6 +50,20 @@ public sealed class ServiceRequestTests
         Assert.Throws<DomainException>(() => request.Start(Guid.NewGuid(), Now));
     }
 
+    [Fact]
+    public void Quoted_price_remains_unchanged_through_status_changes()
+    {
+        var userId = Guid.NewGuid();
+        var request = NewRequest(userId);
+        request.Accept(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), userId, Now.AddMinutes(1));
+        request.MarkEnRoute(userId, Now.AddMinutes(2));
+        request.Start(userId, Now.AddMinutes(3));
+        request.Complete(userId, null, [], Now.AddMinutes(4));
+
+        Assert.Equal(85m, request.QuotedPrice);
+        Assert.Null(request.EstimatedDistanceKm);
+    }
+
     private static ServiceRequest NewRequest(Guid userId) => new(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(),
-        Guid.NewGuid(), null, false, null, userId, Now);
+        Guid.NewGuid(), null, false, null, userId, Now, 85m, null);
 }

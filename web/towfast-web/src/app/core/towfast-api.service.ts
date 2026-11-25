@@ -136,6 +136,11 @@ export class TowFastApiService {
       isActive,
     });
   }
+  configureServicePrice(id: string, body: M.ConfigureServicePriceCommand) {
+    return this.http.patch<M.ServiceTypeResponse>(
+      this.url(`/api/v1/service-types/${id}/pricing`), body,
+    );
+  }
   requests(query: Query = {}) {
     return this.http.get<M.ServiceRequestResponsePageResult>(this.url('/api/v1/service-requests'), {
       params: this.params(query),
@@ -154,6 +159,9 @@ export class TowFastApiService {
   }
   createRequest(body: M.CreateServiceRequestCommand) {
     return this.http.post<M.ServiceRequestResponse>(this.url('/api/v1/service-requests'), body);
+  }
+  quoteRequest(body: M.CreateServiceRequestCommand) {
+    return this.http.post<M.PriceQuoteResponse>(this.url('/api/v1/service-requests/quote'), body);
   }
   acceptRequest(id: string, body: M.AcceptServiceRequestCommand) {
     return this.http.post<M.ServiceRequestResponse>(

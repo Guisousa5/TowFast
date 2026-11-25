@@ -23,8 +23,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Development");
         builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Jwt:Issuer"] = "TowFast.Tests",
-            ["Jwt:Audience"] = "TowFast.Tests",
+            ["Jwt:Issuer"] = "TowFast",
+            ["Jwt:Audience"] = "TowFast.Clients",
             ["Jwt:SigningKey"] = "test-only-signing-key-with-at-least-thirty-two-bytes-123456",
             ["Database:AutoMigrate"] = "false",
             ["Swagger:Enabled"] = "true"
